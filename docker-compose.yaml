@@ -1,0 +1,49 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres-db
+    environment:
+      - POSTGRES_USER=kelompok6
+      - POSTGRES_PASSWORD=ipbdkelompok6
+      - POSTGRES_DB=projekipbd_db
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kelompok6 -d projekipbd_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  airflow:
+    image: apache/airflow:2.7.0-python3.10
+    container_name: airflow-app
+    command: standalone
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://kelompok6:ipbdkelompok6@postgres:5432/projekipbd_db
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+    ports:
+      - "8080:8080"
+
+    volumes:
+      - ./dags:/opt/airflow/dags
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  metabase:
+    image: metabase/metabase:latest
+    container_name: metabase-app
+    ports:
+      - "3000:3000"
+    environment:
+      - MB_DB_TYPE=postgres
+      - MB_DB_DBNAME=projekipbd_db
+      - MB_DB_PORT=5432
+      - MB_DB_USER=kelompok6
+      - MB_DB_PASS=ipbdkelompok6
+      - MB_DB_HOST=postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
