@@ -1,0 +1,9 @@
+# Mengabaikan file sistem dan cache Python
+__pycache__/
+*.pyc
+.DS_Store
+
+# Mengabaikan data lokal database dan logs dari Docker
+postgres-data/
+logs/
+plugins/
